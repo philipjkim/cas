@@ -513,3 +513,26 @@ func TestSingleLogOut(t *testing.T) {
 		t.Errorf("Expected tickets.Read error to be ErrInvalidTicket, got %v", err)
 	}
 }
+
+func TestLoginURLForRequest(t *testing.T) {
+	u, _ := url.Parse("http://cas.example.com/cas")
+
+	client := NewClient(&Options{
+		URL:                u,
+		ServiceQuerySuffix: "loginurl=http://auth.example.com/login",
+	})
+
+	req, err := http.NewRequest("GET", "http://example.com", nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	expected := "http://cas.example.com/cas/login?service=http%3A%2F%2Fexample.com%3Floginurl%3Dhttp%253A%252F%252Fauth.example.com%252Flogin"
+	actual, err := client.LoginURLForRequest(req)
+	if err != nil {
+		t.Error(err)
+	}
+	if actual != expected {
+		t.Errorf("expected `%s`, but got `%s`", expected, actual)
+	}
+}

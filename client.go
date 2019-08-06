@@ -11,13 +11,14 @@ import (
 
 // Options contains client configuration options.
 type Options struct {
-	URL          *url.URL     // URL to the CAS service
-	Store        TicketStore  // Custom TicketStore, if nil a MemoryStore will be used
-	Client       *http.Client // Custom http client to allow options for http connections
-	SendService  bool         // Custom sendService to determine whether you need to send service param
-	URLScheme    URLScheme    // Custom url scheme, can be used to modify the request urls for the client
-	Cookie       *http.Cookie // http.Cookie options, uses Path, Domain, MaxAge, HttpOnly, & Secure
-	SessionStore SessionStore
+	URL                *url.URL     // URL to the CAS service
+	Store              TicketStore  // Custom TicketStore, if nil a MemoryStore will be used
+	Client             *http.Client // Custom http client to allow options for http connections
+	SendService        bool         // Custom sendService to determine whether you need to send service param
+	ServiceQuerySuffix string       // Custom querystring to be added to service URL (ex: `loginurl=http://foo.bar`)
+	URLScheme          URLScheme    // Custom url scheme, can be used to modify the request urls for the client
+	Cookie             *http.Cookie // http.Cookie options, uses Path, Domain, MaxAge, HttpOnly, & Secure
+	SessionStore       SessionStore
 }
 
 // Client implements the main protocol
@@ -27,8 +28,9 @@ type Client struct {
 	urlScheme URLScheme
 	cookie    *http.Cookie
 
-	sessions    SessionStore
-	sendService bool
+	sessions           SessionStore
+	sendService        bool
+	serviceQuerySuffix string
 
 	stValidator *ServiceTicketValidator
 }
@@ -79,13 +81,14 @@ func NewClient(options *Options) *Client {
 	}
 
 	return &Client{
-		tickets:     tickets,
-		client:      client,
-		urlScheme:   urlScheme,
-		cookie:      cookie,
-		sessions:    sessions,
-		sendService: options.SendService,
-		stValidator: NewServiceTicketValidator(client, options.URL),
+		tickets:            tickets,
+		client:             client,
+		urlScheme:          urlScheme,
+		cookie:             cookie,
+		sessions:           sessions,
+		sendService:        options.SendService,
+		serviceQuerySuffix: options.ServiceQuerySuffix,
+		stValidator:        NewServiceTicketValidator(client, options.URL),
 	}
 }
 
@@ -134,6 +137,14 @@ func (c *Client) LoginURLForRequest(r *http.Request) (string, error) {
 	service, err := requestURL(r)
 	if err != nil {
 		return "", err
+	}
+
+	if c.serviceQuerySuffix != "" {
+		m, err := url.ParseQuery(c.serviceQuerySuffix)
+		if err != nil {
+			return "", err
+		}
+		service.RawQuery = m.Encode()
 	}
 
 	q := u.Query()
