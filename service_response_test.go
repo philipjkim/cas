@@ -24,7 +24,7 @@ func TestUnmarshalFailureServiceResponse(t *testing.T) {
 	}
 
 	if authErr, ok := err.(AuthenticationError); ok {
-		if authErr.Code != INVALID_TICKET {
+		if authErr.Code != InvalidTicket {
 			t.Errorf("Expected Code to be <INVALID_TICKET>, got <%v>", authErr.Code)
 		}
 

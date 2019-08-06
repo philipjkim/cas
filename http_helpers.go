@@ -22,11 +22,14 @@ func setClient(r *http.Request, c *Client) {
 
 // getClient retrieves the Client associated with the http.Request.
 func getClient(r *http.Request) *Client {
-	if c := r.Context().Value(clientKey); c != nil {
+	c := r.Context().Value(clientKey)
+	if c != nil {
 		return c.(*Client)
-	} else {
-		return nil // explicitly pass along the nil to caller -- conforms to previous impl
 	}
+
+	// explicitly pass along the nil to caller --
+	// conforms to previous impl
+	return nil
 }
 
 // RedirectToLogin allows CAS protected handlers to redirect a request
@@ -66,11 +69,14 @@ func setAuthenticationResponse(r *http.Request, a *AuthenticationResponse) {
 // getAuthenticationResponse retrieves the AuthenticationResponse associated
 // with a http.Request.
 func getAuthenticationResponse(r *http.Request) *AuthenticationResponse {
-	if a := r.Context().Value(authenticationResponseKey); a != nil {
+	a := r.Context().Value(authenticationResponseKey)
+	if a != nil {
 		return a.(*AuthenticationResponse)
-	} else {
-		return nil // explicitly pass along the nil to caller -- conforms to previous impl
 	}
+
+	// explicitly pass along the nil to caller --
+	// conforms to previous impl
+	return nil
 }
 
 // IsAuthenticated indicates whether the request has been authenticated with CAS.

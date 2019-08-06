@@ -9,7 +9,7 @@ import (
 	"github.com/golang/glog"
 )
 
-// Client configuration options
+// Options contains client configuration options.
 type Options struct {
 	URL          *url.URL     // URL to the CAS service
 	Store        TicketStore  // Custom TicketStore, if nil a MemoryStore will be used
@@ -124,8 +124,8 @@ func requestURL(r *http.Request) (*url.URL, error) {
 	return u, nil
 }
 
-// LoginUrlForRequest determines the CAS login URL for the http.Request.
-func (c *Client) LoginUrlForRequest(r *http.Request) (string, error) {
+// LoginURLForRequest determines the CAS login URL for the http.Request.
+func (c *Client) LoginURLForRequest(r *http.Request) (string, error) {
 	u, err := c.urlScheme.Login()
 	if err != nil {
 		return "", err
@@ -143,8 +143,8 @@ func (c *Client) LoginUrlForRequest(r *http.Request) (string, error) {
 	return u.String(), nil
 }
 
-// LogoutUrlForRequest determines the CAS logout URL for the http.Request.
-func (c *Client) LogoutUrlForRequest(r *http.Request) (string, error) {
+// LogoutURLForRequest determines the CAS logout URL for the http.Request.
+func (c *Client) LogoutURLForRequest(r *http.Request) (string, error) {
 	u, err := c.urlScheme.Logout()
 	if err != nil {
 		return "", err
@@ -164,27 +164,27 @@ func (c *Client) LogoutUrlForRequest(r *http.Request) (string, error) {
 	return u.String(), nil
 }
 
-// ServiceValidateUrlForRequest determines the CAS serviceValidate URL for the ticket and http.Request.
-func (c *Client) ServiceValidateUrlForRequest(ticket string, r *http.Request) (string, error) {
+// ServiceValidateURLForRequest determines the CAS serviceValidate URL for the ticket and http.Request.
+func (c *Client) ServiceValidateURLForRequest(ticket string, r *http.Request) (string, error) {
 	service, err := requestURL(r)
 	if err != nil {
 		return "", err
 	}
-	return c.stValidator.ServiceValidateUrl(service, ticket)
+	return c.stValidator.ServiceValidateURL(service, ticket)
 }
 
-// ValidateUrlForRequest determines the CAS validate URL for the ticket and http.Request.
-func (c *Client) ValidateUrlForRequest(ticket string, r *http.Request) (string, error) {
+// ValidateURLForRequest determines the CAS validate URL for the ticket and http.Request.
+func (c *Client) ValidateURLForRequest(ticket string, r *http.Request) (string, error) {
 	service, err := requestURL(r)
 	if err != nil {
 		return "", err
 	}
-	return c.stValidator.ValidateUrl(service, ticket)
+	return c.stValidator.ValidateURL(service, ticket)
 }
 
 // RedirectToLogout replies to the request with a redirect URL to log out of CAS.
 func (c *Client) RedirectToLogout(w http.ResponseWriter, r *http.Request) {
-	u, err := c.LogoutUrlForRequest(r)
+	u, err := c.LogoutURLForRequest(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -199,9 +199,9 @@ func (c *Client) RedirectToLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, u, http.StatusFound)
 }
 
-// RedirectToLogout replies to the request with a redirect URL to authenticate with CAS.
+// RedirectToLogin replies to the request with a redirect URL to authenticate with CAS.
 func (c *Client) RedirectToLogin(w http.ResponseWriter, r *http.Request) {
-	u, err := c.LoginUrlForRequest(r)
+	u, err := c.LoginURLForRequest(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -216,12 +216,12 @@ func (c *Client) RedirectToLogin(w http.ResponseWriter, r *http.Request) {
 
 // validateTicket performs CAS ticket validation with the given ticket and service.
 func (c *Client) validateTicket(ticket string, service *http.Request) error {
-	serviceUrl, err := requestURL(service)
+	serviceURL, err := requestURL(service)
 	if err != nil {
 		return err
 	}
 
-	success, err := c.stValidator.ValidateTicket(serviceUrl, ticket)
+	success, err := c.stValidator.ValidateTicket(serviceURL, ticket)
 	if err != nil {
 		return err
 	}
@@ -241,24 +241,25 @@ func (c *Client) getSession(w http.ResponseWriter, r *http.Request) {
 	cookie := c.getCookie(w, r)
 
 	if s, ok := c.sessions.Get(cookie.Value); ok {
-		if t, err := c.tickets.Read(s); err == nil {
+		t, err := c.tickets.Read(s)
+		if err == nil {
 			if glog.V(1) {
 				glog.Infof("Re-used ticket %s for %s", s, t.User)
 			}
 
 			setAuthenticationResponse(r, t)
 			return
-		} else {
-			if glog.V(2) {
-				glog.Infof("Ticket %v not in %T: %v", s, c.tickets, err)
-			}
-
-			if glog.V(1) {
-				glog.Infof("Clearing ticket %s, no longer exists in ticket store", s)
-			}
-
-			clearCookie(w, cookie)
 		}
+
+		if glog.V(2) {
+			glog.Infof("Ticket %v not in %T: %v", s, c.tickets, err)
+		}
+
+		if glog.V(1) {
+			glog.Infof("Clearing ticket %s, no longer exists in ticket store", s)
+		}
+
+		clearCookie(w, cookie)
 	}
 
 	if ticket := r.URL.Query().Get("ticket"); ticket != "" {
@@ -271,24 +272,25 @@ func (c *Client) getSession(w http.ResponseWriter, r *http.Request) {
 
 		c.setSession(cookie.Value, ticket)
 
-		if t, err := c.tickets.Read(ticket); err == nil {
+		t, err := c.tickets.Read(ticket)
+		if err == nil {
 			if glog.V(1) {
 				glog.Infof("Validated ticket %s for %s", ticket, t.User)
 			}
 
 			setAuthenticationResponse(r, t)
 			return
-		} else {
-			if glog.V(2) {
-				glog.Infof("Ticket %v not in %T: %v", ticket, c.tickets, err)
-			}
-
-			if glog.V(1) {
-				glog.Infof("Clearing ticket %s, no longer exists in ticket store", ticket)
-			}
-
-			clearCookie(w, cookie)
 		}
+
+		if glog.V(2) {
+			glog.Infof("Ticket %v not in %T: %v", ticket, c.tickets, err)
+		}
+
+		if glog.V(1) {
+			glog.Infof("Clearing ticket %s, no longer exists in ticket store", ticket)
+		}
+
+		clearCookie(w, cookie)
 	}
 }
 

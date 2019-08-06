@@ -13,14 +13,14 @@ import (
 
 // AuthenticationError Code values
 const (
-	INVALID_REQUEST            = "INVALID_REQUEST"
-	INVALID_TICKET_SPEC        = "INVALID_TICKET_SPEC"
-	UNAUTHORIZED_SERVICE       = "UNAUTHORIZED_SERVICE"
-	UNAUTHORIZED_SERVICE_PROXY = "UNAUTHORIZED_SERVICE_PROXY"
-	INVALID_PROXY_CALLBACK     = "INVALID_PROXY_CALLBACK"
-	INVALID_TICKET             = "INVALID_TICKET"
-	INVALID_SERVICE            = "INVALID_SERVICE"
-	INTERNAL_ERROR             = "INTERNAL_ERROR"
+	InvalidRequest           = "INVALID_REQUEST"
+	InvalidTicketSpec        = "INVALID_TICKET_SPEC"
+	UnauthorizedService      = "UNAUTHORIZED_SERVICE"
+	UnauthorizedServiceProxy = "UNAUTHORIZED_SERVICE_PROXY"
+	InvalidProxyCallback     = "INVALID_PROXY_CALLBACK"
+	InvalidTicket            = "INVALID_TICKET"
+	InvalidService           = "INVALID_SERVICE"
+	InternalError            = "INTERNAL_ERROR"
 )
 
 // AuthenticationError represents a CAS AuthenticationFailure response

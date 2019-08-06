@@ -1,10 +1,10 @@
 package cas
 
 import (
-	"testing"
-	"net/http/httptest"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"testing"
 )
 
 func TestRequestGrantingTicket(t *testing.T) {
@@ -29,13 +29,13 @@ func TestRequestGrantingTicket(t *testing.T) {
 	}))
 	defer server.Close()
 
-	casUrl, err := url.Parse(server.URL + "/cas/")
+	casURL, err := url.Parse(server.URL + "/cas/")
 	if err != nil {
 		t.Error("failed to create cas url from test server")
 	}
 
 	restClient := NewRestClient(&RestOptions{
-		CasURL: casUrl,
+		CasURL: casURL,
 		Client: server.Client(),
 	})
 
@@ -76,21 +76,20 @@ func TestRequestServiceTicket(t *testing.T) {
 	}))
 	defer server.Close()
 
-	casUrl, err := url.Parse(server.URL + "/cas/")
+	casURL, err := url.Parse(server.URL + "/cas/")
 	if err != nil {
 		t.Error("failed to create cas url from test server")
 	}
 
-
-	serviceUrl, err := url.Parse("https://hitchhiker.com/heartOfGold")
+	serviceURL, err := url.Parse("https://hitchhiker.com/heartOfGold")
 	if err != nil {
 		t.Error("failed to create service url")
 	}
 
 	restClient := NewRestClient(&RestOptions{
-		CasURL: casUrl,
-		ServiceURL: serviceUrl,
-		Client: server.Client(),
+		CasURL:     casURL,
+		ServiceURL: serviceURL,
+		Client:     server.Client(),
 	})
 
 	st, err := restClient.RequestServiceTicket(TicketGrantingTicket("TGT-abc"))
@@ -107,15 +106,15 @@ func TestRequestServiceTicket(t *testing.T) {
 		t.Errorf("service ticket request should fail for TGT-xyz")
 	}
 
-	serviceUrl, err = url.Parse("https://hitchhiker.com/restaurantAtTheEndOfTheUniverse")
+	serviceURL, err = url.Parse("https://hitchhiker.com/restaurantAtTheEndOfTheUniverse")
 	if err != nil {
 		t.Error("failed to create service url")
 	}
 
 	restClient = NewRestClient(&RestOptions{
-		CasURL: casUrl,
-		ServiceURL: serviceUrl,
-		Client: server.Client(),
+		CasURL:     casURL,
+		ServiceURL: serviceURL,
+		Client:     server.Client(),
 	})
 
 	_, err = restClient.RequestServiceTicket(TicketGrantingTicket("TGT-abc"))
@@ -135,13 +134,13 @@ func TestValidateService(t *testing.T) {
 	}))
 	defer server.Close()
 
-	casUrl, err := url.Parse(server.URL + "/cas/")
+	casURL, err := url.Parse(server.URL + "/cas/")
 	if err != nil {
 		t.Error("failed to create cas url from test server")
 	}
 
 	restClient := NewRestClient(&RestOptions{
-		CasURL: casUrl,
+		CasURL: casURL,
 		Client: server.Client(),
 	})
 
@@ -167,13 +166,13 @@ func TestLogout(t *testing.T) {
 	}))
 	defer server.Close()
 
-	casUrl, err := url.Parse(server.URL + "/cas/")
+	casURL, err := url.Parse(server.URL + "/cas/")
 	if err != nil {
 		t.Error("failed to create cas url from test server")
 	}
 
 	restClient := NewRestClient(&RestOptions{
-		CasURL: casUrl,
+		CasURL: casURL,
 		Client: server.Client(),
 	})
 
