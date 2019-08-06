@@ -1,4 +1,4 @@
-module github.com/philipjkim/cas
+module github.com/philipjkim/cas/v2
 
 go 1.12
 
