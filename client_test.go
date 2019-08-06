@@ -468,7 +468,7 @@ func TestSingleLogOut(t *testing.T) {
 
 		fmt.Fprintln(w, "Welcome, you are logged in")
 	})
-
+ 
 	// Log them in
 	req, err := http.NewRequest("GET", "http://example.com/?ticket=ST-l8d6b51d8e9c4569345a30e2f904626a1066384db8694784a60b515d62f6c", nil)
 	if err != nil {
